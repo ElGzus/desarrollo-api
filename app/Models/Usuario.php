@@ -14,4 +14,9 @@ class Usuario extends Model
         'email',
         'password',
     ];
+
+    public function productos()
+    {
+        return $this->hasMany(Producto::class);
+    }
 }
