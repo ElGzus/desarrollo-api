@@ -14,4 +14,9 @@ class Valoracion extends Model
         'producto_id',
         'puntuacion',
     ];
+
+    public function usuario()
+    {
+        return $this->belongsTo(Usuario::class);
+    }
 }

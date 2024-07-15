@@ -4,7 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ValoracionController;
 
 Route::middleware('auth:api')->group(function () {
@@ -17,11 +17,11 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('usuarios/{id}', [UsuarioController::class, 'delete']);
 
     // Rutas para gestionar productos
-    Route::get('productos', [ProductController::class, 'index']);
-    Route::post('productos', [ProductController::class,'store']);
-    Route::get('productos/{id}', [ProductController::class,'show']);
-    Route::put('productos/{id}', [ProductController::class, 'update']);
-    Route::delete('productos/{id}', [ProductController::class, 'delete']);
+    Route::get('productos', [ProductoController::class, 'index']);
+    Route::post('productos', [ProductoController::class,'store']);
+    Route::get('productos/{id}', [ProductoController::class,'show']);
+    Route::put('productos/{id}', [ProductoController::class, 'update']);
+    Route::delete('productos/{id}', [ProductoController::class, 'destroy']);
 
     //Rutas para valoraciones
     Route::post('productos/{id}/valoracion', [ValoracionController::class, 'store']);
