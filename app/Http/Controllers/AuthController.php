@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use Exception;
+use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -12,34 +13,73 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+        try{
+            // Validar los datos, dandoles parámetros de validación buit-in de Laravel
+            $request->validate([
+                'nombre' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:usuarios',
+                'password' => 'required|string|min:8'
+            ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+            $user = Usuario::create([
+                'nombre' => $request->nombre,
+                'email' => $request->email,
+                'password' => Hash::make($request->password)
+            ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+            $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json(['token' => $token], 201);
+            return response()->json([
+                'token' => $token,
+                'message' => 'Usuario creado correctamente',
+            ], 201);
+        } catch (Exception $error) {
+            return $error->getMessage();
+        }
     }
 
     public function login(Request $request)
     {
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
+        try {
+            $request->validate([
+                'email' => 'required|string|email',
+                'password' => 'required|string|min:8'
             ]);
+
+            // Del body de la petición se toman los campos email y password para autenticar al usuario
+            if (!Auth::attempt($request->only('email', 'password'))) {
+                throw ValidationException::withMessages([
+                    'message' => ['Usuario no autorizado']
+                ]);
+            }
+
+            // Con las credenciales validadas, se busca al usuario en la base de datos
+            $user = Usuario::where('email', $request->email)->firstOrFail();
+
+            // Se crea un token de autenticación para el usuario
+            $token = $user->createToken('auth_token')->plainTextToken;
+    
+            return response()->json([
+                'token' => $token,
+                'type' => 'Bearer',
+                'message' => 'Usuario autenticado correctamente'
+            ], 200);
+        } catch (Exception $error) {
+            return $error->getMessage();
         }
+    }
 
-        $user = User::where('email', $request->email)->firstOrFail();
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json(['token' => $token], 200);
+    public function logout(Request $request)
+    {
+        try {
+            // Se revoca el token de autenticación del usuario
+            $request->user()->currentAccessToken()->delete();
+    
+            return response()->json([
+                'message' => 'Token de autenticación revocado'
+            ], 200);
+        } catch (Exception $error) {
+            return $error->getMessage();
+        }
     }
 }

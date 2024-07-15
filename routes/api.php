@@ -28,10 +28,14 @@ Route::middleware('auth:api')->group(function () {
     Route::get('productos/{id}/valoracion', [ValoracionController::class, 'index']);
     Route::get('productos/{id}/valoracion-promedio', [ValoracionController::class, 'valoracionPromedio']);
     Route::get('productos/top-rated-valoracion', [ValoracionController::class, 'topRatedValoracion']);
+
+    // Ruta para cerrar sesión
+    Route::post('/logout', [AuthController::class, 'logout']);
 });
 
-Route::post('register', [AuthController::class, 'register']);
-Route::post('login', [AuthController::class, 'login']);
+// Rutas para autenticación
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
 
 
 
