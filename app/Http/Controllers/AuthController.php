@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Exception;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -40,18 +39,16 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        try {
-            $request->validate([
-                'email' => 'required|string|email',
-                'password' => 'required|string|min:8'
-            ]);
+        $request->validate([
+            'email' => 'required|string|email',
+            'password' => 'required|string|min:8'
+        ]);
 
-            // Del body de la petición se toman los campos email y password para autenticar al usuario
-            if (!Auth::attempt($request->only('email', 'password'))) {
-                throw ValidationException::withMessages([
-                    'message' => ['Usuario no autorizado']
-                ]);
-            }
+        $user = Usuario::where('email', $request->email)->first();
+        if (! $user || ! Hash::check($request->password, $user->password)) {
+            throw ValidationException::withMessages([
+                'email' => ['Usuario no autorizado'],
+            ]);
 
             // Con las credenciales validadas, se busca al usuario en la base de datos
             $user = Usuario::where('email', $request->email)->firstOrFail();
@@ -64,8 +61,6 @@ class AuthController extends Controller
                 'type' => 'Bearer',
                 'message' => 'Usuario autenticado correctamente'
             ], 200);
-        } catch (Exception $error) {
-            return $error->getMessage();
         }
     }
 
