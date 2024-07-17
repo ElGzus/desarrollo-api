@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use Exception;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -26,11 +26,8 @@ class AuthController extends Controller
                 'password' => Hash::make($request->password)
             ]);
 
-            $token = $user->createToken('auth_token')->plainTextToken;
-
             return response()->json([
-                'token' => $token,
-                'message' => 'Usuario creado correctamente',
+                'message' => 'Usuario registrado correctamente',
             ], 201);
         } catch (Exception $error) {
             return $error->getMessage();
@@ -44,24 +41,22 @@ class AuthController extends Controller
             'password' => 'required|string|min:8'
         ]);
 
-        $user = Usuario::where('email', $request->email)->first();
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['Usuario no autorizado'],
-            ]);
-
-            // Con las credenciales validadas, se busca al usuario en la base de datos
-            $user = Usuario::where('email', $request->email)->firstOrFail();
-
-            // Se crea un token de autenticación para el usuario
-            $token = $user->createToken('auth_token')->plainTextToken;
-    
+        if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
-                'token' => $token,
-                'type' => 'Bearer',
-                'message' => 'Usuario autenticado correctamente'
-            ], 200);
+                'message' => 'Credenciales incorrectas'
+            ], 401);
         }
+
+        $user = $request->user();
+
+        // Se crea un token de autenticación para el usuario
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'token' => $token,
+            'type' => 'Bearer',
+            'message' => 'Usuario autenticado correctamente'
+        ], 200);
     }
 
     public function logout(Request $request)
