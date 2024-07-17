@@ -39,6 +39,10 @@ erDiagram
     Producto ||--o{ Valoracion: "recibe"
 ```
 
+## Documentación de la API con Postman
+La documentación de la API se encuentra en el siguiente enlace de Postman:
+[Ejecutar en Postman](https://documenter.getpostman.com/view/21524567/2sA3kSm2tu)
+
 ## Tecnologías
 - Laravel
   - Sanctum
